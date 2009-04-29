@@ -3,7 +3,6 @@ package Angerwhale::Model::UserStore;
 use strict;
 use warnings;
 use base qw(Catalyst::Model);
-use NEXT;
 use YAML::Syck qw(LoadFile DumpFile);
 use Angerwhale::User;
 use File::Slurp qw(read_file write_file);
@@ -60,7 +59,7 @@ Called by Catalyst to create and initialize userstore.
 
 sub new {
     my ( $self, $c ) = @_;
-    $self = $self->NEXT::new(@_);
+    $self = $self->next::method(@_);
     my $dir = $self->{users} = $c->config->{base} . '/.users';
 
     # read the config, first from $self->whatever, then from

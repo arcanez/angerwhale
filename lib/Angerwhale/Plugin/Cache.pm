@@ -3,7 +3,6 @@
 package Angerwhale::Plugin::Cache;
 use strict;
 use warnings;
-use NEXT;
 use base 'Class::Accessor::Fast';
 use Compress::Zlib;
 use Algorithm::IncludeExclude;
@@ -71,7 +70,7 @@ Init the plugin
 
 sub setup {
     my ($class, @args) = @_;
-    $class->NEXT::setup(@args);
+    $class->next::method(@args);
     
     die "If you're going to use Angerwhale::Plugin::Cache, you need to configure it"
       unless ref $class->config->{revision_callback} eq 'CODE';
@@ -94,7 +93,7 @@ Get the cache ID during prepare step.
 sub prepare {
     my ($class, @args) = @_;
     
-    my $c = $class->NEXT::prepare(@args);
+    my $c = $class->next::method(@args);
     
     # clear out old data
     $c->cache_key(0);
@@ -144,7 +143,7 @@ sub dispatch {
         $c->log->debug("skipping the request cycle! fast!");
         return;
     }
-    return $c->NEXT::dispatch(@args);
+    return $c->next::method(@args);
 }
 
 =head2 finalize
@@ -209,7 +208,7 @@ sub finalize {
         $c->response->headers->header( 'Last-Modified' => time2str($doc->{mtime}) );
     }
     
-    $c->NEXT::finalize(@args);
+    $c->next::method(@args);
 }
 
 =head2 _gzip_response

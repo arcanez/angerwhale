@@ -50,7 +50,6 @@ requires
    'IO::String'                                  => 0,
    'JSON'                                        => 0,
    'Module::Pluggable'                           => 0,
-   'NEXT'                                        => '0.60',
    'Pod::Simple::Text'                           => 0,
    'POSIX'                                       => 0,
    'Pod::Xhtml'                                  => '1.57',

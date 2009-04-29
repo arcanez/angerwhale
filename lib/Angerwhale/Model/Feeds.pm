@@ -27,7 +27,7 @@ sub COMPONENT {
     my $args  = $_[1];
     
     $args->{feeds} = $app->config->{feeds};
-    $class->NEXT::COMPONENT(@_);
+    $class->next::method(@_);
 }
 
 1;

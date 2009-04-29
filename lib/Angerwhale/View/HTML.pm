@@ -1,5 +1,4 @@
 package Angerwhale::View::HTML;
-use NEXT;
 use strict;
 use base 'Catalyst::View::TT';
 use File::Spec;
@@ -32,7 +31,7 @@ sub process {
     };
     $context->define_filter('time' => $time, 1);
     
-    return $self->NEXT::process($app, @_);
+    return $self->next::method($app, @_);
 }
 
 =head1 NAME

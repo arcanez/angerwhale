@@ -63,7 +63,7 @@ sub new {
     Test::WWW::Mechanize::Catalyst->import(qw|Angerwhale|);
     our @ISA = ('Test::WWW::Mechanize::Catalyst');
     my $class = shift;
-    return $class->NEXT::new(@_);
+    return $class->next::method(@_);
 }
 
 sub tmp {
