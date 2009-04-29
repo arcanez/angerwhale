@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl -w
 
 use strict;
 use warnings;
@@ -41,10 +41,9 @@ angerwhale_test.pl [options] uri
 
 Run a Catalyst action from the command line.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Sebastian Riedel, C<sri@oook.de>
-Maintained by the Catalyst Core Team.
+Catalyst Contributors, see Catalyst.pm
 
 =head1 COPYRIGHT
 

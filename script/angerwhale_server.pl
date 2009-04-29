@@ -1,10 +1,10 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl -w
 
-BEGIN { 
+BEGIN {
     $ENV{CATALYST_ENGINE} ||= 'HTTP';
-    $ENV{CATALYST_SCRIPT_GEN} = 31;
+    $ENV{CATALYST_SCRIPT_GEN} = 32;
     require Catalyst::Engine::HTTP;
-}  
+}
 
 use strict;
 use warnings;
@@ -17,14 +17,13 @@ my $debug             = 0;
 my $fork              = 0;
 my $help              = 0;
 my $host              = undef;
-my $port              = 3000;
+my $port              = $ENV{ANGERWHALE_PORT} || $ENV{CATALYST_PORT} || 3000;
 my $keepalive         = 0;
-my $restart           = 0;
+my $restart           = $ENV{ANGERWHALE_RELOAD} || $ENV{CATALYST_RELOAD} || 0;
 my $restart_delay     = 1;
-my $restart_regex     = '\.yml$|\.yaml$|\.pm$';
+my $restart_regex     = '(?:/|^)(?!\.#).+(?:\.yml$|\.yaml$|\.conf|\.pm)$';
 my $restart_directory = undef;
-my $background        = 0;
-my $pidfile           = "/tmp/Angerwhale.pid";
+my $follow_symlinks   = 0;
 
 my @argv = @ARGV;
 
@@ -38,14 +37,13 @@ GetOptions(
     'restart|r'           => \$restart,
     'restartdelay|rd=s'   => \$restart_delay,
     'restartregex|rr=s'   => \$restart_regex,
-    'restartdirectory=s'  => \$restart_directory,
-    'daemon'              => \$background,
-    'pidfile=s'           => \$pidfile,          
+    'restartdirectory=s@' => \$restart_directory,
+    'followsymlinks'      => \$follow_symlinks,
 );
 
 pod2usage(1) if $help;
 
-if ( $restart ) {
+if ( $restart && $ENV{CATALYST_ENGINE} eq 'HTTP' ) {
     $ENV{CATALYST_ENGINE} = 'HTTP::Restarter';
 }
 if ( $debug ) {
@@ -64,8 +62,7 @@ Angerwhale->run( $port, $host, {
     restart_delay     => $restart_delay,
     restart_regex     => qr/$restart_regex/,
     restart_directory => $restart_directory,
-    background        => $background,
-    pidfile           => $pidfile,				
+    follow_symlinks   => $follow_symlinks,
 } );
 
 1;
@@ -91,15 +88,12 @@ angerwhale_server.pl [options]
    -rd -restartdelay  delay between file checks
    -rr -restartregex  regex match files that trigger
                       a restart when modified
-                      (defaults to '\.yml$|\.yaml$|\.pm$')
+                      (defaults to '\.yml$|\.yaml$|\.conf|\.pm$')
    -restartdirectory  the directory to search for
-                      modified files
-                      (defaults to '../')
-
-   -daemon            background the server
-   -pidfile=filename  store the pid if the server in filename, if
-                      daemonizing
-
+                      modified files, can be set mulitple times
+                      (defaults to '[SCRIPT_DIR]/..')
+   -follow_symlinks   follow symlinks in search directories
+                      (defaults to false. this is a no-op on Win32)
  See also:
    perldoc Catalyst::Manual
    perldoc Catalyst::Manual::Intro
@@ -108,10 +102,9 @@ angerwhale_server.pl [options]
 
 Run a Catalyst Testserver for this application.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Sebastian Riedel, C<sri@oook.de>
-Maintained by the Catalyst Core Team.
+Catalyst Contributors, see Catalyst.pm
 
 =head1 COPYRIGHT
 
