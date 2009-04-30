@@ -13,9 +13,10 @@ licence('gpl');
 requires 
   (
    'Algorithm::IncludeExclude'                   => '0.01',
-   'Catalyst'                                    => '5.7',          
+   'Catalyst'                                    => '5.8',          
    'Catalyst::Model::XML::Feed'                  => '0.01',
    'Catalyst::Component::ACCEPT_CONTEXT'         => '0.02',
+   'Catalyst::Plugin::Browser'                   => '0.05',
    'Catalyst::Plugin::Cache'                     => '0.02',
    'Catalyst::Plugin::Cache::Store::FastMmap'    => '0.01',
    'Catalyst::Plugin::ConfigLoader'              => 0,

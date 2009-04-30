@@ -8,7 +8,7 @@ use YAML::Syck qw(LoadFile);
 use Catalyst qw/Unicode ConfigLoader Static::Simple
                 Cache Cache::Store::FastMmap
                 Session::Store::FastMmap Session::State::Cookie Session
-                ConfigLoader::Environment +Angerwhale::Plugin::Cache/;
+                ConfigLoader::Environment Browser +Angerwhale::Plugin::Cache/;
 
 #XXX: add C3 and LogWarnings back
 

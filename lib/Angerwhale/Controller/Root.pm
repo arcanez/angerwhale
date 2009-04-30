@@ -125,6 +125,9 @@ sub end : Private {
         # work around mech's inability to handle "XML"
         $c->response->content_type('text/html; charset=utf-8');
     }
+    elsif ( $c->req->browser->windows && $c->req->browser->ie ) {
+        $c->response->content_type('text/html; charset=utf-8');
+    }
     else {
         $c->response->content_type('application/xhtml+xml; charset=utf-8');
     }
