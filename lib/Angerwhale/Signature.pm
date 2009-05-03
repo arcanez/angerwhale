@@ -4,8 +4,7 @@
 package Angerwhale::Signature;
 use strict;
 use warnings;
-use Crypt::OpenPGP;
-use Crypt::OpenPGP::Message;
+use Crypt::GpgME;
 use Angerwhale::User::Anonymous;
 use File::Attributes qw(get_attribute set_attribute);
 use Carp;
@@ -22,8 +21,8 @@ signed.
 
 sub signor {
     my $self = shift;
-    my ( $data, $sig ) = $self->_signed_text( $self->raw_text(1) );
-    return $sig->key_id;
+    my ( $result, $plain ) = $self->_signed_text( $self->raw_text(1) );
+    return lc($result->{signatures}->[0]->{fpr});
 }
 
 =head2 signed
@@ -61,7 +60,6 @@ sub signed {
 
     my $result = eval {
 
-        # XXX: Crypt::OpenPGP is really really slow, so cache the result
         my $signed = $self->_cached_signature;
 
         if ( defined $signed && $signed eq "yes" ) {
@@ -82,36 +80,26 @@ sub signed {
             die "Bad signature";
         }
     };
-    if ($@) {
 
-        #"Problem checking signature on ". $self->uri. ": $@";
-        return 0;
-    }
-
+    return 0 if $@;
     return $result;
 }
 
 =head2 _check_signature($message)
 
-Checks the OpenPGP signature on $message.  Returns the real (binary)
-key id if the signature is valid.  Raises an exception on error.
-
-B<Warning: slow.>  It is best to cache the result, if possible.
+Checks the pgp signature on $message.  Returns the fingerprint
+if the signature is valid.  Raises an exception on error.
 
 =cut
 
 sub _check_signature {
     my ( $self, $message ) = @_;
-    my $keyserver = $self->userstore->keyserver;
-    my $pgp       = Crypt::OpenPGP->new(
-        KeyServer       => $keyserver,
-        AutoKeyRetrieve => 1
-    );
-    my ( $id, $sig ) = $pgp->verify( Signature => $message );
 
-    die $pgp->errstr    if !defined $id;
-    return $sig->key_id if $id;
-    return 0;    # otherwise
+    my ( $result, $plain ) = eval { Crypt::GpgME->new->verify( $message ) };
+
+    die "$@" if !defined $plain or $@;
+
+    return $plain ? lc($result->{signatures}->[0]->{fpr}) : 0;
 }
 
 =head2 signed_text($message)
@@ -119,41 +107,20 @@ sub _check_signature {
 Given PGP-signed $message, returns the plaintext of that message.
 Throws an exception on error.
 
-In array context, returns an list (data, signature), where data is a
-Crypt::OpenPGP::PlainText and signature isa Crypt::OpenPGP::Signature
-ora Crypt::OpenPGP::OnePassSig.
+In array context, returns an list (plain, result), where plain is a
+plaintext representtion of $message and result is a hash containing
+signature information
 
 =cut
 
 sub _signed_text {
     my ( $self, $message ) = @_;
-    my ( $data, $sig );
-    
-    my $msg = Crypt::OpenPGP::Message->new( Data => $message )
-      or croak "Reading message failed: " . Crypt::OpenPGP::Message->errstr;
 
-    my @pieces = $msg->pieces;
-    if ( ref( $pieces[0] ) eq 'Crypt::OpenPGP::Compressed' ) {
-        $data = $pieces[0]->decompress
-          or die "Decompression error: " . $pieces[0]->errstr;
-        $msg = Crypt::OpenPGP::Message->new( Data => $data )
-          or die "Reading decompressed data failed: "
-          . Crypt::OpenPGP::Message->errstr;
-        @pieces = $msg->pieces;
-    }
+    my ( $result, $plain ) = eval { Crypt::GpgME->new->verify( $message ) };
 
-    if ( ref( $pieces[0] ) eq 'Crypt::OpenPGP::OnePassSig' ) {
-        ( $data, $sig ) = @pieces[ 1, 2 ];
-    }
-    elsif ( ref( $pieces[0] ) eq 'Crypt::OpenPGP::Signature' ) {
-        ( $sig, $data ) = @pieces[ 0, 1 ];
-    }
-    else {
-        croak "unable to read signature";
-    }
+    croak "$@" if !defined $plain or $@;
 
-    return ( $data, $sig ) if wantarray;
-    return $data->{data};    # otherwise, just the data
+    return wantarray ? ( $plain, $result ) : $plain;
 }
 
 =head1 _cached_signature
@@ -185,11 +152,9 @@ sub _cache_signature {
 # and base the author on the signature
 
 sub _fix_author {
-    my $self        = shift;
-    my $id          = shift;
-    my $nice_key_id = unpack( "H*", $id );
+    my ( $self, $id ) = @_;
 
-    set_attribute( $self->location, 'author', $nice_key_id );
+    set_attribute( $self->location, 'author', $id );
 }
 
 1;

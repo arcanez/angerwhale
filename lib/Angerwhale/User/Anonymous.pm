@@ -20,10 +20,6 @@ User that is un authenticated, like slashdot's Anonymous Coward.
 
 Create a new user
 
-=head2 nice_id
-
-0
-
 =head2 id
 
 0
@@ -43,10 +39,6 @@ sub new {
     my $self  = {};
 
     return bless $self, $class;
-}
-
-sub nice_id {
-    return 0;
 }
 
 sub id {

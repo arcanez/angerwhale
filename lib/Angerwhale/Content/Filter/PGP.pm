@@ -3,7 +3,7 @@
 
 package Angerwhale::Content::Filter::PGP;
 use Angerwhale::Signature;
-use Crypt::OpenPGP;
+use Crypt::GpgME;
 use Encode;
 use strict;
 use warnings;
@@ -21,9 +21,7 @@ appropriately.
 sub filter {
     return 
       sub {
-          my $self = shift;
-          my $context = shift;
-          my $item = shift;
+          my ( $self, $context, $item ) = @_;
 
           my $text;
           eval {
@@ -42,23 +40,16 @@ sub filter {
               return $item; # we're done.  nothing to do.
           }
 
-          if($item->metadata->{raw_author} &&
-             $item->metadata->{signed} eq 'yes'){
+          if($item->metadata->{raw_author} && $item->metadata->{signed} eq 'yes') {
               # signature is cached, so restore user without checking sig
-              $item->metadata->{author} = 
-                $context->model('UserStore')->
-                  get_user_by_nice_id($item->metadata->{raw_author});
-
-              $item->metadata->{signor} =
-                pack( "H*", $item->metadata->{raw_author});
+              $item->metadata->{author} = $context->model('UserStore')->get_user_by_id($item->metadata->{raw_author});
+              $item->metadata->{signor} = $item->metadata->{raw_author};
           }
           else {
               # no cached signature, check the signature
-              my $author =
-                get_user_signature($item->metadata->{raw_text},
-                                   $context->model('UserStore'));
+              my $author = get_user_signature($item->metadata->{raw_text});
               
-              if(!$author){
+              if(!$author) {
                   # bad signature!
                   $item->metadata->{author} = Angerwhale::User::Anonymous->new;
               }
@@ -66,14 +57,11 @@ sub filter {
                   # good signature
                   # cache the signature so we don't have to verify again
                   $item->store_attribute('signed', 'yes');
-                  $item->store_attribute('author',  unpack( "H*", $author));
+                  $item->store_attribute('author', $author);
                   $item->metadata->{raw_author} = $item->metadata->{author};
                   
                   # setup the "inflated" author
-                  $item->metadata->{author} =
-                    $context->model('UserStore')->
-                      get_user_by_real_id($author);
-
+                  $item->metadata->{author} = $context->model('UserStore')->get_user_by_id($author);
                   $item->metadata->{signor} = $author;
               }
           }
@@ -89,18 +77,12 @@ Returns keyid of signature, or false if the signature is invalid.
 =cut
 
 sub get_user_signature {
-    my ($message, $userstore) = @_;
-    my $keyserver = $userstore->keyserver;
-    my $pgp       = Crypt::OpenPGP->new(
-                                        KeyServer       => $keyserver,
-                                        AutoKeyRetrieve => 1
-                                       );
+    my $message = shift;
+
+    my ( $result, $plain ) = eval { Crypt::GpgME->new->verify( $message ) };
     
-    my ( $id, $sig ) = $pgp->verify( Signature => $message );
-    
-    die $pgp->errstr    if !defined $id;
-    return $sig->key_id if $id;
-    return 0;    # otherwise
+    die "$@" if !defined $plain or $@;
+    return $plain ? lc($result->{signatures}->[0]->{fpr}) : 0;
 }
 
 1;

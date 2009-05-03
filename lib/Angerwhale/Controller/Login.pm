@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base 'Catalyst::Controller';
 use Angerwhale::Challenge;
-use Crypt::OpenPGP;
+use Crypt::GpgME;
 use YAML::Syck;
 
 # XXX: HACK, HACK, HACK ... !
@@ -61,22 +61,18 @@ sub process : Local {
         $c->detach();
     }
 
-    my $pgp = Crypt::OpenPGP->new(
-        KeyServer       => $keyserver,
-        AutoKeyRetrieve => 1
-    );
-    my ( $long_id, $sig ) = $pgp->verify( Signature => $input );
-    if ( !$nonce_data || !$sig ) {
+    my ( $result, $plain ) = Crypt::GpgME->new->verify( $input );
+
+    if ( !$nonce_data || !$plain ) {
         $c->flash( error => 'There was a problem verifying the signature.' );
         $c->res->redirect( $c->uri_for('/login') );
         $c->detach();
     }
 
-    my $sig_ok      = $sig && $long_id;
-    my $key_id      = $sig->key_id;
-    my $nice_key_id = "0x" . substr( unpack( "H*", $key_id ), -8, 8 );
+    my $sig_ok      = $result && $plain;
+    my $id      = $result->{signatures}->[0]->{fpr};
 
-    $c->log->debug("keyid $nice_key_id ($long_id) is presumably logging in");
+    $c->log->debug("keyid $id is presumably logging in");
 
     eval {
         my $challenge = Load($nonce_data)
@@ -85,9 +81,9 @@ sub process : Local {
         $c->session->{nonce} = undef;
 
         my $nonce_ok = ( $nonce == $challenge );
-        $c->log->debug("$nice_key_id: nonce verified OK (was $challenge)")
+        $c->log->debug("$id: nonce verified OK (was $challenge)")
           if $nonce_ok;
-        $c->log->debug("$nice_key_id: Signature was valid")
+        $c->log->debug("$id: Signature was valid")
           if $sig_ok;
 
         die "bad nonce" if !$nonce_ok;
@@ -95,14 +91,14 @@ sub process : Local {
     };
 
     if ($@) {
-        $c->log->debug("Failed login for $nice_key_id: $@");
-        $c->response->body("You cheating scum!  You are NOT $nice_key_id!");
+        $c->log->debug("Failed login for $id: $@");
+        $c->response->body("You cheating scum!  You are NOT $id!");
         return;
     }
 
     my $user;
     eval {
-        $user = $c->model('UserStore')->get_user_by_real_id($key_id);
+        $user = $c->model('UserStore')->get_user_by_id($id);
         $c->model('UserStore')->refresh_user($user);
     };
     if ($@) {
@@ -117,7 +113,7 @@ sub process : Local {
 
     $c->session->{user} = $user;
     $c->log->debug(
-        "successful login for " . $user->fullname . "($nice_key_id)" );
+        "successful login for " . $user->fullname . "($id)" );
     $c->flash( message => "You are now logged in as ". $user->fullname );
     $c->response->redirect( $c->uri_for('/') );
 }
