@@ -7,6 +7,6 @@
 
 <script type="text/javascript">
 // <![CDATA[
-  Jemplate.process('logged_in_as.tt', '[% c.uri_for('/users/current') %]', '#login_box');
+//  Jemplate.process('logged_in_as.tt', '[% c.uri_for('/users/current') %]', '#login_box');
 // ]]>
 </script>

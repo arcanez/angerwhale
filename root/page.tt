@@ -22,10 +22,12 @@
        <script type="text/javascript" 
                src="[% base %]static/javascript/[% script | html %]"></script>
     [% END %]
+
     [% FOREACH jemplate = c.config.page_includes.jemplates %]
        <script type="text/javascript" 
                src="[% base %]jemplate/[% jemplate | html %]"></script>
     [% END %]
+
   </head>
   <body>
    <div id="page"> <!-- for typo themes -->
@@ -73,4 +75,3 @@
    </div>
   </body>
 </html>
-

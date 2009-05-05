@@ -2,7 +2,7 @@
 # no user servicable parts inside!
 name: Angerwhale
 encoding: utf-8
-keyserver: stinkfoot.org
+keyserver: keys.gnupg.net
 Model::Articles:
    storage_class: Filesystem
    storage_args:
@@ -27,12 +27,12 @@ page_includes:
 # javascript is in base/static/javascript
    javascript:
       - MochiKit.js
-      - Jemplate.js
+#      - Jemplate.js
       - Angerwhale.js
 # jemplates are in base/jemplate/*
-   jemplates:
-      - logged_in_as.tt
-      - sidebar_feed.tt
+#   jemplates:
+#      - logged_in_as.tt
+#      - sidebar_feed.tt
 theme: phokus
 themes:
    phokus:
@@ -42,6 +42,10 @@ themes:
    legacy:
       css:
          - legacy/style.css
+         - common/syntax-dark.css
+   warpedreality:
+      css:
+         - warpedreality/warpedreality.css
          - common/syntax-dark.css
 filters:
    - Encoding
