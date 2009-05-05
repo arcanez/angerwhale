@@ -48,7 +48,6 @@ sub nonce : Local {
 sub process : Local {
     my ( $self, $c ) = @_;
     my $input     = $c->request->param('login');
-    my $keyserver = $c->model('UserStore')->keyserver;
 
     my $nonce_data = 
       eval {
@@ -99,7 +98,7 @@ sub process : Local {
     my $user;
     eval {
         $user = $c->model('UserStore')->get_user_by_id($id);
-        $c->model('UserStore')->refresh_user($user);
+#        $c->model('UserStore')->refresh_user($user);
     };
     if ($@) {
         $c->flash( error => 'Your data could not be loaded from a keyserver.'

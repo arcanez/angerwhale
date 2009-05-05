@@ -30,9 +30,9 @@ sub users : Path {
 
     my @users = $c->model('UserStore')->users;
 
-    foreach my $user (@users) {
-        $user->refresh;
-    }
+#    foreach my $user (@users) {
+#        $user->refresh;
+#    }
     $c->stash->{users}    = [@users];
     $c->stash->{template} = "users.tt";
 }

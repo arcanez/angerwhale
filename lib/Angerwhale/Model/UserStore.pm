@@ -25,12 +25,6 @@ will still be used.
 
 =head1 CONFIGURATION
 
-=head2 keyserver
-
-The keyserver to fetch PGP keys from.  Defaults to C<subkeys.pgp.net>,
-since other keyservers can't manage to properly store and retieve the
-author's key.
-
 =head2 update_interval
 
 Try to update user info from C<keyserver> after this many
@@ -38,7 +32,7 @@ seconds. Defaults to 3600, one hour.
 
 =cut
 
-__PACKAGE__->mk_accessors(qw|update_interval keyserver|);
+__PACKAGE__->mk_accessors(qw|update_interval|);
 
 =head1 METHODS
 
@@ -58,8 +52,6 @@ sub new {
     # clever defaults
     $self->update_interval( $c->config->{update_interval} || 3600 )
       if !$self->update_interval;
-    $self->keyserver( $c->config->{keyserver} || 'stinkfoot.org' )
-      if !$self->keyserver;
 
     mkdir $dir;
     if ( !-d $dir || !-w _ ) {
@@ -93,16 +85,17 @@ sub get_user_by_id {
 
     my $dir          = $self->{users};
     my $base         = "$dir/$id";
-    my $user         = {};
+    my $data         = {};
     my $last_updated = 0;
 
-    $user->{id} = $id;
-    eval { $user->{fullname}    = read_file("$base/fullname") };
-    eval { $user->{fingerprint} = read_file("$base/fingerprint") };
-    eval { $user->{email}       = read_file("$base/email") };
+    $data->{id} = $id;
+    eval { $data->{fullname}    = read_file("$base/fullname") };
+    eval { $data->{fingerprint} = read_file("$base/fingerprint") };
+    eval { $data->{email}       = read_file("$base/email") };
     eval { $last_updated        = read_file("$base/last_updated") };
-    bless $user, 'Angerwhale::User';
-    $user->{keyserver} = $self->{keyserver};
+#    bless $user, 'Angerwhale::User';
+
+    my $user = Angerwhale::User->new($data);
 
     my $outdated = ( ( time() - $last_updated ) > $self->{update_interval} );
     eval { _user_ok($user); };
@@ -114,6 +107,9 @@ sub get_user_by_id {
 
     # create a user if the data was bad
     # or it's time to update
+
+    $user = Angerwhale::User->new({ id => $id });
+=cut
     eval {
         delete $user->{fullname};
         delete $user->{fingerprint};
@@ -124,6 +120,7 @@ sub get_user_by_id {
     };
 
     warn "could not refresh or retrieve user $id: $@" if $@;
+=cut
     die "user isnta a user" if !$user->isa('Angerwhale::User');
     
     return $user;
