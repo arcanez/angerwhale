@@ -1,12 +1,23 @@
 package Angerwhale::Model::UserStore;
 
-use strict;
-use warnings;
 use base qw(Catalyst::Model);
-use YAML::Syck qw(LoadFile DumpFile);
+use Moose;
 use Angerwhale::User;
 use File::Slurp qw(read_file write_file);
 use Carp;
+
+has 'update_interval' => (isa => 'Int', is => 'rw', default => 3600, lazy => 1);
+has 'users_dir' => (isa => 'Str', is => 'rw', builder => '_users_dir');
+
+sub BUILD {
+    my $self = shift;
+
+    my $dir = $self->users_dir;
+    mkdir $dir;
+    if ( !-d $dir || !-w _ ) {
+      die "No user store at $dir";
+    }
+}
 
 =head1 NAME
 
@@ -32,8 +43,6 @@ seconds. Defaults to 3600, one hour.
 
 =cut
 
-__PACKAGE__->mk_accessors(qw|update_interval|);
-
 =head1 METHODS
 
 =head2 new
@@ -42,24 +51,11 @@ Called by Catalyst to create and initialize userstore.
 
 =cut
 
-sub new {
-    my ( $self, $c ) = @_;
-    $self = $self->next::method(@_);
-    my $dir = $self->{users} = $c->config->{base} . '/.users';
-
-    # read the config, first from $self->whatever, then from
-    # c->config->whatever, and finally fall back to some
-    # clever defaults
-    $self->update_interval( $c->config->{update_interval} || 3600 )
-      if !$self->update_interval;
-
-    mkdir $dir;
-    if ( !-d $dir || !-w _ ) {
-        $c->log->fatal("no user store at $dir ($!)");
-        die "no user store at $dir";
-    }
-
-    return $self;
+sub _users_dir {
+    my $self = shift;
+  
+    #return $self->_application->{config}->{base} . '/.users';
+    return '/opt/local/Angerwhale/root/posts/.users';
 }
 
 =head2 create_user_by_id
@@ -83,49 +79,37 @@ Retrieves the user, creating it if necessary.
 sub get_user_by_id {
     my ( $self, $id ) = @_;
 
-    my $dir          = $self->{users};
+    my $dir          = $self->users_dir;
     my $base         = "$dir/$id";
     my $data         = {};
-    my $last_updated = 0;
 
     $data->{id} = $id;
-    eval { $data->{fullname}    = read_file("$base/fullname") };
-    eval { $data->{fingerprint} = read_file("$base/fingerprint") };
-    eval { $data->{email}       = read_file("$base/email") };
-    eval { $last_updated        = read_file("$base/last_updated") };
-#    bless $user, 'Angerwhale::User';
+    eval { $data->{fullname}     = read_file("$base/fullname") };
+    eval { $data->{fingerprint}  = read_file("$base/fingerprint") };
+    eval { $data->{email}        = read_file("$base/email") };
+    eval { $data->{last_updated} = read_file("$base/last_updated") || 0 };
 
     my $user = Angerwhale::User->new($data);
 
-    my $outdated = ( ( time() - $last_updated ) > $self->{update_interval} );
-    eval { _user_ok($user); };
+    my $outdated = ( ( time() - $data->{last_updated} ) > $self->update_interval );
 
-    if ( !$@ && !$outdated ) {
-        # refreshed OK
-        return $user;
-    }
+    return $user if !$@ && !$outdated;
 
     # create a user if the data was bad
     # or it's time to update
 
     $user = Angerwhale::User->new({ id => $id });
-=cut
     eval {
-        delete $user->{fullname};
-        delete $user->{fingerprint};
-        delete $user->{email};
         $user->refresh;
         $self->store_user($user);
-        _user_ok($user);
     };
 
-    warn "could not refresh or retrieve user $id: $@" if $@;
-=cut
-    die "user isnta a user" if !$user->isa('Angerwhale::User');
+    warn "Could not refresh or retrieve user $id: $@" if $@;
+    die "User isn't of type Angerwhale::User" if !$user->isa('Angerwhale::User');
     
     return $user;
 }
-
+=cut
 sub _user_ok {
     my $user = shift;
     die "no name"        if !$user->fullname;
@@ -133,6 +117,7 @@ sub _user_ok {
     die "no fingerprint" if !$user->id;
     return 1;
 }
+=cut
 
 =head2 refresh_user
 
@@ -145,7 +130,6 @@ sub refresh_user {
 
     $user->refresh;
     $self->store_user($user);
-    $user->{refreshed} = 1;
 }
 
 =head2 store_user
@@ -159,7 +143,7 @@ offline.
 sub store_user {
     my ( $self, $user ) = @_;
 
-    my $dir = $self->{users};
+    my $dir = $self->users_dir;
     my $uid = $user->id;
 
     my $base = "$dir/$uid";
@@ -187,7 +171,7 @@ Returns the time of the most recent refresh of all users.
 sub last_updated {
     my ( $self, $user ) = @_;
 
-    my $dir  = $self->{users};
+    my $dir  = $self->users_dir;
     my $uid  = $user->id;
     my $base = "$dir/$uid";
 
@@ -206,7 +190,7 @@ about.  The users are refreshed if they've expired.
 sub users {
     my $self = shift;
 
-    my $dir  = $self->{users};
+    my $dir  = $self->users_dir;
     my @users;
     opendir( my $dirhandle, $dir ) or die "Couldn't open $dir for reading";
     while ( my $uid = readdir $dirhandle ) {

@@ -13,14 +13,14 @@ has 'fullname' => (
     isa => 'Str', 
     is => 'rw', 
     lazy => 1,
-    default => sub { my $id = $_[0]->id; return [grep { !$_->{invalid} && !$_->{revoked} } Crypt::GpgME->new->get_key($id)->uids]->[0]->{name} || 'Unknown Name' },
+    builder => '_fullname',
 );
 
 has 'email' => (
     isa => 'Str',
     is => 'rw',
     lazy => 1,
-    default => sub { my $id = $_[0]->id; return [grep { !$_->{invalid} && !$_->{revoked} } Crypt::GpgME->new->get_key($id)->uids]->[0]->{email} || 'Unknown Email' },
+    builder => '_email',
 );
 
 has 'photo' => (
@@ -29,8 +29,35 @@ has 'photo' => (
     required => 0
 );
 
+has 'last_updated' => (
+    isa => 'Int',
+    is => 'rw',
+    lazy => 1,
+    default => time(),
+);
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
+
+sub _fullname {
+  my $self = shift;
+  my $id = $self->id;
+ 
+  my $name = eval { [grep { !$_->{invalid} && !$_->{revoked} } Crypt::GpgME->new->get_key($id)->uids]->[0]->{name} };
+  $name = 'Unknown Name' if $@;
+
+  return $name;
+}
+
+sub _email {
+  my $self = shift;
+  my $id = $self->id;
+
+  my $email = eval { [grep { !$_->{invalid} && !$_->{revoked} } Crypt::GpgME->new->get_key($id)->uids]->[0]->{email} };
+  $email = 'Unknown Email' if $@;
+
+  return $email;
+}
 
 =head1 ACCESSORS
 

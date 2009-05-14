@@ -1,10 +1,13 @@
-# Anonymous.pm - [description]
-# Copyright (c) 2006 Jonathan T. Rockway
-
 package Angerwhale::User::Anonymous;
-use strict;
-use warnings;
 use base qw(Angerwhale::User);
+use Moose;
+
+has 'id' => (isa => 'Str', is => 'ro', default => 0);
+has 'fullname' => (isa => 'Str', is => 'ro', default => 'Anonymous Coward');
+has 'email' => (isa => 'Str', is => 'ro', default => '');
+
+no Moose;
+__PACKAGE__->meta->make_immutable;
 
 =head1 NAME
 
@@ -33,25 +36,6 @@ Anonymous Coward
 (nothing)
 
 =cut
-
-sub new {
-    my $class = shift;
-    my $self  = {};
-
-    return bless $self, $class;
-}
-
-sub id {
-    return 0;
-}
-
-sub fullname {
-    return "Anonymous Coward";
-}
-
-sub email {
-    return q{};
-}
 
 1;
 
