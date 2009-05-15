@@ -33,7 +33,7 @@ sub process {
         generator => {
             version => $c->config->{VERSION},
             name    => 'Angerwhale',
-            uri     => 'http://www.jrock.us/'
+            uri     => 'http://warpedreality.org'
         },
     );
 
@@ -45,6 +45,7 @@ sub process {
         push @data, ( author => $item->{author} );
         push @data, ( id     => 'urn:guid:' . $item->{guid} );
         push @data, ( link   => $item->{uri} );
+=cut
         eval {
             foreach my $category ( @{ $item->{categories} } )
             {
@@ -57,16 +58,16 @@ sub process {
                   );
             }
         };
+=cut
 
-        # not sure if i want to do this yet
-        #eval {
-        #    foreach my $tag (keys %{$item->{tags}}){
-        #
-        #	push @data, (category =>
-        #		     {term   => $tag,
-        #		      scheme => $c->uri_for('/tags/')});
-        #    }
-        #};
+        foreach my $tag (map { keys %$_ } @{$item->{tags}}) {
+      	  push @data, (
+                        category => {
+                            term   => $tag,
+                            scheme => $c->uri_for('/tags/')
+                        }
+                      );
+            }
         push @data, ( updated => $item->{modified} );
         push @data,
           (
