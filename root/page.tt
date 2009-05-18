@@ -7,7 +7,7 @@
     <title>[% (title || c.config.title || c.config.name) | html %]</title>
     [% FOREACH style = c.config.page_includes.css %]
       <link rel="stylesheet" 
-            href="[% base %]static/[% style | html %]"
+            href="[% c.uri_for('/static/'_ style) %]"
             type="text/css" />    
     [% END %]
       
@@ -19,8 +19,8 @@
           type="text/x-yaml" />
     
     [% FOREACH script = c.config.page_includes.javascript %]
-       <script type="text/javascript" 
-               src="[% base %]static/javascript/[% script | html %]"></script>
+       <script type="text/javascript"
+               src="[% c.uri_for('/static/javascript/'_ script) %]"></script>
     [% END %]
 
     [% FOREACH jemplate = c.config.page_includes.jemplates %]
