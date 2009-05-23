@@ -42,6 +42,16 @@ __PACKAGE__->config->{page_includes}{css} = $css;
 # kill debugging message
 __PACKAGE__->log->disable('debug') if !__PACKAGE__->debug;
 
+sub uri_for {
+  my $c = shift;
+  if ($_[0] =~ /^\/static/) {
+    my $val = shift @_;
+    $val =~ s/^\/static\///;
+    return 'http://cdn.' . $c->req->uri->host . '/' . $val;
+  }
+  $c->next::method(@_);
+}
+
 1;
 
 __END__
