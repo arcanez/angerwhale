@@ -1,10 +1,6 @@
 [% WRAPPER page.tt %]
   [% FOREACH article = articles %]
-   [% IF article.mini %]
-     [% INCLUDE mini_post.tt %]
-   [% ELSE %]
      [% INCLUDE post.tt %]
-   [% END %]
   [% END %]
 
 [% orig_category = category %]

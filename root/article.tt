@@ -7,8 +7,7 @@
  </div>
 [% END %]
 
-  [% INCLUDE post.tt 
-     standalone = 1  %]
+  [% INCLUDE post.tt standalone = 1  %]
 
     [% INCLUDE comments_header.tt %]  
 [% IF article.comments %]

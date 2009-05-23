@@ -1,6 +1,5 @@
 [% USE JavaScript -%]
 <div id="tagbox_[% article.id %]" class="taglist">
- <p class="post_tags">
   <span id="tags_[% article.id %]"> 
     [% IF article.tags %]
     Tags:
@@ -12,7 +11,6 @@
     [% END %]
   </span>
   <span id="plus_[% article.id %]" class="tag_plus">[+]</span>
-  </p>
 </div>
 [% SET url = base _ "tags/do_tag/" _ article.name %]
 [% SET control = "plus_" _ article.id %]

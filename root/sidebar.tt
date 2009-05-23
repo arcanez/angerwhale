@@ -1,6 +1,6 @@
 <!-- sidebar.tt -->
-<div id="sidebar"> 
-  <!-- sidebar blurb + image -->
+<div id="right"> 
+  <div class="rightIn">
   [% IF c.config.description %]
   <div class="box">
   <p id="sidebar_blurb">
@@ -15,19 +15,16 @@
   <!-- navigation box -->
   [% INCLUDE navbox.tt %]		
 
-  <!-- login box -->
-  [% INCLUDE login_box.tt %]
-
   [% IF c.config.feeds %]
   <!-- sidebar feeds -->
   <div id="sidebar_feeds" />
   <script type="text/javascript">
-  // <![CDATA[
-//  Jemplate.process('sidebar_feed.tt', '[% c.uri_for('/sidebarfeeds/all') | html %]',
-//                   '#sidebar_feeds');
-  // ]]>
+    //<![CDATA[
+    Jemplate.process('sidebar_feed.tt', '[% c.uri_for('/sidebarfeeds/all') | html %]', '#sidebar_feeds');
+    //]]>
   </script>
   [% END %]
-
-</div>
+  </div> <!-- class="rightIn" -->
+</div> <!-- id="right" -->
+<div class="clear"></div>
 <!-- end sidebar.tt -->

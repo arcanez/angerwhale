@@ -1,8 +1,6 @@
 <div id="login_box" class="box">
-     <h3>Login</h3>
-      <p id="logged_in_as" class="logged_in_as">
-        Not logged in.  <a href="[% c.uri_for("/login") %]">Log in</a>.
-      </p>
+     <h5>Login</h5>
+     Not logged in.  <a href="[% c.uri_for("/login") %]">Log in</a>.
 </div>
 
 <script type="text/javascript">

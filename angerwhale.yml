@@ -1,17 +1,19 @@
 ---
-title: Angerwhale
-description: Welcome to Angerwhale.  You should change this.
-author: Your Name
-contact: nobody@example.com
+title: w a r p e d r e a l i t y
+description:
+author: Justin Hunter
+contact: justin.d.hunter@gmail.com
 base: __path_to(root/posts)__
 sidebar_picture: ~
 #date_format: %c
 language: en-us
-feeds: ~
-#feeds:
+#feeds: ~
+feeds:
 # - title: "delicious"
 #   location: "http://del.icio.us/rss"
+# - title: Ironman
+#   location: "http://ironman.enlightenedperl.org/atom.xml"
 #max_feed_entries: 5
 
 # pick your theme, currently "legacy" or "phokus"
-theme: phokus
+theme: warpedreality

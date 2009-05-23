@@ -1,44 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-                      "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xml:lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
   <head>
     <title>[% (title || c.config.title || c.config.name) | html %]</title>
     [% FOREACH style = c.config.page_includes.css %]
-      <link rel="stylesheet" 
-            href="[% c.uri_for('/static/'_ style) %]"
-            type="text/css" />    
+      <link rel="stylesheet" href="[% c.uri_for('/static/'_ style) %]" type="text/css" />    
     [% END %]
       
-    <link rel="alternate" href="[% base %]feeds/articles/atom"
-	  type="application/atom+xml" title="RSS Feed" />
-    <link rel="alternate" href="[% base %]feeds/comments/atom"
-	  type="application/atom+xml" title="RSS Comment Feed" />
-    <link rel="alternate" href="[% base %]feeds/articles/yaml" 
-          type="text/x-yaml" />
+    <link rel="alternate" href="[% base %]feeds/articles/atom" type="application/atom+xml" title="RSS Feed" />
+    <link rel="alternate" href="[% base %]feeds/comments/atom" type="application/atom+xml" title="RSS Comment Feed" />
+    <link rel="alternate" href="[% base %]feeds/articles/yaml" type="text/x-yaml" />
+
+    <script src="http://www.google-analytics.com/ga.js" type="text/javascript"></script>
+    <script type="text/javascript">
+    //<![CDATA[
+      try {
+        var pageTracker = _gat._getTracker("");
+        pageTracker._trackPageview();
+      } catch(err) {}
+    //]]>
+    </script>
     
     [% FOREACH script = c.config.page_includes.javascript %]
-       <script type="text/javascript"
-               src="[% c.uri_for('/static/javascript/'_ script) %]"></script>
+       <script type="text/javascript" src="[% c.uri_for('/static/javascript/'_ script) %]"></script>
     [% END %]
 
     [% FOREACH jemplate = c.config.page_includes.jemplates %]
-       <script type="text/javascript" 
-               src="[% base %]jemplate/[% jemplate | html %]"></script>
+       <script type="text/javascript" src="[% base %]jemplate/[% jemplate | html %]"></script>
     [% END %]
 
   </head>
   <body>
-   <div id="page"> <!-- for typo themes -->
-    <div id="header" class="header">
-      <h1><a href="[% base %]">[% c.config.title | html %]</a></h1>
+   <div id="frame">
+    <div id="header"></div>
+    <div id="main">
 
-    </div>
-
-    [% INCLUDE sidebar.tt %]
-    
-    <div id="content">
+    <div id="left">
+      <div class="leftIn">
       [% IF error %]
         <div id="error" class="error">
 	  [% error %]
@@ -50,28 +48,12 @@
         </div>
       [% END %]
       [% content %]
-    </div>
-    <div id="footer">
-      <p id="angerwhale_blurb">Page generated
-      by <a href="http://www.angerwhale.org/">Angerwhale</a>
-      version [% c.config.VERSION %] on [% generated_at | time | html %].
-      </p>
-      <div id="logos">
-	  <object data="[% base %]static/common/images/svg_source/valid-xhtml11-blue-v.svg"
-		  type="image/svg+xml" height="30" width="100">
-	    Valid XHTML.
-	  </object>
-	  <object data="[% base %]static/common/images/svg_source/valid-css-blue-v.svg"
-		  type="image/svg+xml" height="30" width="100">
-	    Valid CSS.
-	  </object>
-	  <object data="[% base %]static/common/images/svg_source/valid-svg11-blue-v.svg"
-		  type="image/svg+xml" height="30" width="100">
-	    Valid SVG.  (If you're seeing this, though, you need a
-	    better browser so you can actually see them!)
-	  </object>
-      </div>
-    </div>
-   </div>
+      </div> <!-- class="leftIn" -->
+    </div> <!-- id="left" -->
+
+    [% INCLUDE sidebar.tt %]
+
+    </div> <!-- id="main" -->
+   </div> <!-- id="frame" -->
   </body>
 </html>

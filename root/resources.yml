@@ -30,7 +30,7 @@ page_includes:
 #      - Jemplate.js
       - Angerwhale.js
 # jemplates are in base/jemplate/*
-#   jemplates:
+   jemplates:
 #      - logged_in_as.tt
 #      - sidebar_feed.tt
 theme: phokus
@@ -46,7 +46,7 @@ themes:
    warpedreality:
       css:
          - warpedreality/warpedreality.css
-         - common/syntax-dark.css
+#         - common/syntax-dark.css
 filters:
    - Encoding
    - Checksum
