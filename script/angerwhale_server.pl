@@ -2,7 +2,7 @@
 
 BEGIN {
     $ENV{CATALYST_ENGINE} ||= 'HTTP';
-    $ENV{CATALYST_SCRIPT_GEN} = 33;
+    $ENV{CATALYST_SCRIPT_GEN} = 37;
     require Catalyst::Engine::HTTP;
 }
 
@@ -21,6 +21,7 @@ my $port              = $ENV{ANGERWHALE_PORT} || $ENV{CATALYST_PORT} || 3000;
 my $keepalive         = 0;
 my $restart           = $ENV{ANGERWHALE_RELOAD} || $ENV{CATALYST_RELOAD} || 0;
 my $background        = 0;
+my $pidfile           = undef;
 
 my $check_interval;
 my $file_regex;
@@ -42,6 +43,7 @@ GetOptions(
     'restartdirectory=s@' => \$watch_directory,
     'followsymlinks'      => \$follow_symlinks,
     'background'          => \$background,
+    'pidfile=s'           => \$pidfile,
 );
 
 pod2usage(1) if $help;
@@ -70,6 +72,7 @@ my $runner = sub {
             'fork'     => $fork,
             keepalive  => $keepalive,
             background => $background,
+            pidfile    => $pidfile,
         }
     );
 };
@@ -85,14 +88,14 @@ if ( $restart ) {
         if $follow_symlinks;
     $args{directories} = $watch_directory
         if defined $watch_directory;
-    $args{interval} = $check_interval
+    $args{sleep_interval} = $check_interval
         if defined $check_interval;
-    $args{regex} = qr/$file_regex/
+    $args{filter} = qr/$file_regex/
         if defined $file_regex;
 
     my $restarter = Catalyst::Restarter->new(
         %args,
-        restart_sub => $runner,
+        start_sub => $runner,
     );
 
     $restarter->run_and_watch;
@@ -132,6 +135,8 @@ angerwhale_server.pl [options]
    -follow_symlinks   follow symlinks in search directories
                       (defaults to false. this is a no-op on Win32)
    -background        run the process in the background
+   -pidfile           specify filename for pid file
+
  See also:
    perldoc Catalyst::Manual
    perldoc Catalyst::Manual::Intro

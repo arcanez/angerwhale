@@ -32,7 +32,7 @@ requires
    'Catalyst::View::Jemplate'                    => 0,
    'Class::C3'                                   => 0,
    'Compress::Zlib'                              => '2.005',
-   'Crypt::OpenPGP'                              => '1.03',
+   'Crypt::GpgME'                                => 0,
    'Crypt::Random'                               => 0,
    'Data::UUID'                                  => 0,
    'Digest::MD5'                                 => 0,
