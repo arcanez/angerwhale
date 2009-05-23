@@ -37,6 +37,14 @@ sub auto : Private {
     return 1;
 }
 
+sub gsoc09 : Local {
+    my ( $self, $c ) = @_;
+    #$c->stash->{page}     = 'article_list';
+    $c->stash->{title}    = $c->config->{title} . ' // Google Summer of Code 2009 Proposal';
+
+    $c->stash->{template} = 'gsoc09.tt';
+}
+
 =head2 blog
 
 Render the main blog page (category '/').
