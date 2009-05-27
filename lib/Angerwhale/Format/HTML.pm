@@ -213,8 +213,7 @@ sub _parse {
                     $scheme = 'http';
                 }
 
-                if (   $scheme !~ /^(http|ftp|mailto)$/
-                    || $uri->as_string =~ /#/ )
+                if (   $scheme !~ /^(http|ftp|mailto)$/ ) 
                 {
                     $result .= $self->_parse(@kids);    # not a link.
                 }
@@ -342,6 +341,7 @@ sub _escape {
     $text =~ s/>/&gt;/g;
     $text =~ s/"/&quot;/g;
     $text =~ s/'/&apos;/g;
+    $text =~ s/#/&#35;/g;
     return $text;
 }
 
